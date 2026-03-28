@@ -2,7 +2,6 @@
 
 // Handle Login Submission
 async function handleLogin(email, password) {
-  // ✅ Use window.supabaseClient (not supabaseClient directly)
   const { data, error } = await window.supabaseClient.auth.signInWithPassword({
     email: email.trim(),
     password: password
@@ -27,7 +26,7 @@ async function handleSignup(email, password, businessName) {
     email: email.trim(),
     password: password,
     options: {
-       {
+      data: {  // ✅ Fixed: Added "data" property
         business_name: businessName
       }
     }
@@ -71,7 +70,7 @@ function showNotification(message, type = 'info') {
 
 // Check Auth State on Load
 document.addEventListener('DOMContentLoaded', async () => {
-  // ✅ Safe check: ensure supabaseClient exists first
+  // Safe check: ensure supabaseClient exists first
   if (typeof window.supabaseClient === 'undefined') {
     console.warn('Supabase client not loaded yet, retrying...');
     setTimeout(() => checkAuth(), 500);
