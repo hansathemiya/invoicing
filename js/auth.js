@@ -2,43 +2,49 @@
 
 // Handle Login Submission
 async function handleLogin(email, password) {
-  const { data, error } = await window.supabaseClient.auth.signInWithPassword({
-    email: email.trim(),
-    password: password
-  });
+  try {
+    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+      email: email.trim(),
+      password: password
+    });
 
-  if (error) {
-    showNotification(error.message, 'error');
+    if (error) throw error;
+
+    showNotification('Login successful! Redirecting...', 'success');
+    setTimeout(() => {
+      window.location.href = 'dashboard.html';
+    }, 1000);
+    
+    return data;
+  } catch (err) {
+    showNotification(err.message || 'Login failed', 'error');
+    console.error('Login error:', err);
     return null;
   }
-
-  showNotification('Login successful! Redirecting...', 'success');
-  setTimeout(() => {
-    window.location.href = 'dashboard.html';
-  }, 1000);
-  
-  return data;
 }
 
 // Handle Signup Submission
 async function handleSignup(email, password, businessName) {
-  const { data, error } = await window.supabaseClient.auth.signUp({
-    email: email.trim(),
-    password: password,
-    options: {
-      data: {  // ✅ Fixed: Added "data" property
-        business_name: businessName
+  try {
+    const { data, error } = await window.supabaseClient.auth.signUp({
+      email: email.trim(),
+      password: password,
+      options: {
+        data: {  // ✅ CORRECT: "data" key wraps user metadata
+          business_name: businessName
+        }
       }
-    }
-  });
+    });
 
-  if (error) {
-    showNotification(error.message, 'error');
+    if (error) throw error;
+
+    showNotification('Account created! Please check your email to confirm.', 'success');
+    return data;
+  } catch (err) {
+    showNotification(err.message || 'Signup failed', 'error');
+    console.error('Signup error:', err);
     return null;
   }
-
-  showNotification('Account created! Please check your email to confirm.', 'success');
-  return data;
 }
 
 // UI Helper: Show Notifications
@@ -69,16 +75,32 @@ function showNotification(message, type = 'info') {
 }
 
 // Check Auth State on Load
-document.addEventListener('DOMContentLoaded', async () => {
-  // Safe check: ensure supabaseClient exists first
+async function checkAuth() {
   if (typeof window.supabaseClient === 'undefined') {
-    console.warn('Supabase client not loaded yet, retrying...');
-    setTimeout(() => checkAuth(), 500);
+    console.warn('Supabase client not loaded, retrying in 500ms...');
+    setTimeout(checkAuth, 500);
     return;
   }
   
-  const {  { session } } = await window.supabaseClient.auth.getSession();
-  if (session) {
-    window.location.href = 'dashboard.html';
+  try {
+    const {  { session } } = await window.supabaseClient.auth.getSession();
+    if (session && !window.location.href.includes('index.html')) {
+      // Already logged in, stay on current page
+    } else if (session && window.location.href.includes('index.html')) {
+      // Logged in but on login page → redirect to dashboard
+      window.location.href = 'dashboard.html';
+    }
+  } catch (err) {
+    console.error('Auth check error:', err);
   }
+}
+
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuth();
 });
+
+// ✅ Explicitly expose functions to window for inline script access
+window.handleLogin = handleLogin;
+window.handleSignup = handleSignup;
+window.showNotification = showNotification;
