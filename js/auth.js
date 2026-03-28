@@ -1,21 +1,21 @@
-// js/auth.js
+// js/auth.js - FINAL CLEAN VERSION
 
 // Handle Login Submission
 async function handleLogin(email, password) {
   try {
-    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+    const result = await window.supabaseClient.auth.signInWithPassword({
       email: email.trim(),
       password: password
     });
 
-    if (error) throw error;
+    if (result.error) throw result.error;
 
     showNotification('Login successful! Redirecting...', 'success');
     setTimeout(() => {
       window.location.href = 'dashboard.html';
     }, 1000);
     
-    return data;
+    return result.data;
   } catch (err) {
     showNotification(err.message || 'Login failed', 'error');
     console.error('Login error:', err);
@@ -26,20 +26,20 @@ async function handleLogin(email, password) {
 // Handle Signup Submission
 async function handleSignup(email, password, businessName) {
   try {
-    const { data, error } = await window.supabaseClient.auth.signUp({
+    const result = await window.supabaseClient.auth.signUp({
       email: email.trim(),
       password: password,
       options: {
-        data: {  // ✅ CORRECT: "data" key wraps user metadata
+        data: {
           business_name: businessName
         }
       }
     });
 
-    if (error) throw error;
+    if (result.error) throw result.error;
 
     showNotification('Account created! Please check your email to confirm.', 'success');
-    return data;
+    return result.data;
   } catch (err) {
     showNotification(err.message || 'Signup failed', 'error');
     console.error('Signup error:', err);
@@ -83,11 +83,12 @@ async function checkAuth() {
   }
   
   try {
-    const {  { session } } = await window.supabaseClient.auth.getSession();
-    if (session && !window.location.href.includes('index.html')) {
-      // Already logged in, stay on current page
-    } else if (session && window.location.href.includes('index.html')) {
-      // Logged in but on login page → redirect to dashboard
+    const result = await window.supabaseClient.auth.getSession();
+    if (result.error) throw result.error;
+    
+    const session = result.data.session;
+    
+    if (session && window.location.href.includes('index.html')) {
       window.location.href = 'dashboard.html';
     }
   } catch (err) {
@@ -100,7 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
   checkAuth();
 });
 
-// ✅ Explicitly expose functions to window for inline script access
+// ✅ Expose functions to window for inline script access
 window.handleLogin = handleLogin;
 window.handleSignup = handleSignup;
 window.showNotification = showNotification;
+window.checkAuth = checkAuth;
