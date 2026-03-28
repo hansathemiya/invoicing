@@ -1,0 +1,7 @@
+# Ignore sensitive files
+.env
+*.log
+.DS_Store
+
+# Ignore local config (we'll use env vars or placeholders)
+js/config.local.js
