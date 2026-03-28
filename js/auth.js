@@ -2,7 +2,8 @@
 
 // Handle Login Submission
 async function handleLogin(email, password) {
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
+  // ✅ Use window.supabaseClient (not supabaseClient directly)
+  const { data, error } = await window.supabaseClient.auth.signInWithPassword({
     email: email.trim(),
     password: password
   });
@@ -13,7 +14,6 @@ async function handleLogin(email, password) {
   }
 
   showNotification('Login successful! Redirecting...', 'success');
-  // Redirect to Dashboard (we will create this next)
   setTimeout(() => {
     window.location.href = 'dashboard.html';
   }, 1000);
@@ -23,11 +23,11 @@ async function handleLogin(email, password) {
 
 // Handle Signup Submission
 async function handleSignup(email, password, businessName) {
-  const { data, error } = await supabaseClient.auth.signUp({
+  const { data, error } = await window.supabaseClient.auth.signUp({
     email: email.trim(),
     password: password,
     options: {
-      data: {
+       {
         business_name: businessName
       }
     }
@@ -44,7 +44,6 @@ async function handleSignup(email, password, businessName) {
 
 // UI Helper: Show Notifications
 function showNotification(message, type = 'info') {
-  // Create notification element if it doesn't exist
   let notif = document.getElementById('notification-area');
   if (!notif) {
     notif = document.createElement('div');
@@ -60,12 +59,10 @@ function showNotification(message, type = 'info') {
   
   notif.appendChild(alert);
 
-  // Animate in
   requestAnimationFrame(() => {
     alert.classList.remove('translate-x-full', 'opacity-0');
   });
 
-  // Remove after 4 seconds
   setTimeout(() => {
     alert.classList.add('translate-x-full', 'opacity-0');
     setTimeout(() => alert.remove(), 300);
@@ -74,9 +71,15 @@ function showNotification(message, type = 'info') {
 
 // Check Auth State on Load
 document.addEventListener('DOMContentLoaded', async () => {
-  const { data: { session } } = await supabaseClient.auth.getSession();
+  // ✅ Safe check: ensure supabaseClient exists first
+  if (typeof window.supabaseClient === 'undefined') {
+    console.warn('Supabase client not loaded yet, retrying...');
+    setTimeout(() => checkAuth(), 500);
+    return;
+  }
+  
+  const {  { session } } = await window.supabaseClient.auth.getSession();
   if (session) {
-    // If already logged in, go to dashboard
     window.location.href = 'dashboard.html';
   }
 });
