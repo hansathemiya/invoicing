@@ -185,7 +185,7 @@
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email.trim(), password: password });
         if (error) throw error;
         showNotification('Login successful! Redirecting...', 'success');
-        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+        setTimeout(() => { window.location.href = './dashboard/'; }, 1000);
       } catch (err) {
         showNotification(err.message || 'Login failed', 'error');
         console.error('Login error:', err);
