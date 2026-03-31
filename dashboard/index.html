@@ -300,7 +300,7 @@
     async function checkAuth() {
       const {  { session } } = await supabaseClient.auth.getSession();
       if (!session) {
-        window.location.href = 'index.html';
+        window.location.href = '../index.html';
         return;
       }
       currentUser = session.user;
@@ -575,7 +575,7 @@
       // Logout
       document.getElementById('logout-btn')?.addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
-        window.location.href = 'index.html';
+        window.location.href = '../index.html';
       });
 
       // New Invoice buttons
