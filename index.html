@@ -5,14 +5,14 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Login - Six7 Invoicing</title>
   
-  <!-- Tailwind CSS (CDN warning is normal for dev) -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   
-  <!-- ✅ Supabase JS SDK - MUST load BEFORE our config.js -->
+  <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- Tailwind Config -->
@@ -43,20 +43,12 @@
   </script>
 
   <style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    }
-    body {
-      background-color: #f7fafc;
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(210, 228, 255, 0.4) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(209, 228, 251, 0.3) 0px, transparent 50%);
-    }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    body { background-color: #f7fafc; background-image: radial-gradient(at 0% 0%, rgba(210, 228, 255, 0.4) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(209, 228, 251, 0.3) 0px, transparent 50%); }
     @keyframes spin { to { transform: rotate(360deg); } }
     .animate-spin { animation: spin 1s linear infinite; }
   </style>
 </head>
-
 <body class="text-on-surface min-h-screen flex items-center justify-center p-6">
 
   <div class="w-full max-w-[440px] flex flex-col items-center">
@@ -87,7 +79,6 @@
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <span class="material-symbols-outlined text-on-surface-variant/60">mail</span>
             </div>
-            <!-- ✅ Added autocomplete -->
             <input class="block w-full pl-12 pr-4 py-3.5 bg-surface-container-low border-0 rounded-xl text-on-surface font-medium focus:ring-2 focus:ring-primary focus:bg-white transition-all" id="login-email" type="email" placeholder="name@business.lk" required autocomplete="email"/>
           </div>
         </div>
@@ -101,7 +92,6 @@
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <span class="material-symbols-outlined text-on-surface-variant/60">lock</span>
             </div>
-            <!-- ✅ Added autocomplete -->
             <input class="block w-full pl-12 pr-12 py-3.5 bg-surface-container-low border-0 rounded-xl text-on-surface font-medium focus:ring-2 focus:ring-primary focus:bg-white transition-all" id="login-password" type="password" placeholder="••••••••" required autocomplete="current-password"/>
             <button class="absolute inset-y-0 right-0 pr-4 flex items-center text-on-surface-variant/60 hover:text-primary transition-colors" type="button" id="toggle-password">
               <span class="material-symbols-outlined">visibility</span>
@@ -152,89 +142,130 @@
 
       <!-- Footer -->
       <div class="mt-8 pt-6 border-t border-outline-variant/10 text-center">
-        <p class="text-xs text-on-surface-variant">
-          Protected by Six7 Security. <br/>© 2026 Six7 Invoicing.
-        </p>
+        <p class="text-xs text-on-surface-variant">Protected by Six7 Security. <br/>© 2026 Six7 Invoicing.</p>
       </div>
     </div>
   </div>
 
-  <!-- ✅ Script Order: Config FIRST, then auth, then inline -->
-  <script src="js/config.js"></script>
-  <script src="js/auth.js"></script>
+  <!-- ALL LOGIC IN ONE PLACE -->
   <script>
-    // UI Logic for Tabs & Password Toggle
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const tabLogin = document.getElementById('tab-login');
-    const tabSignup = document.getElementById('tab-signup');
-    const togglePwdBtn = document.getElementById('toggle-password');
+    // 1. CONFIGURATION
+    const SUPABASE_URL = 'https://hsjhuiyyxotsyqjncvvm.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhzamh1aXl5eG90c3lxam5jdnZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MTA0MDMsImV4cCI6MjA5MDI4NjQwM30.p-CXtR_bY20n1fq8hz1hvpWu9gNT3dWPoVs7NNiwhRY';
+    
+    // 2. INITIALIZE SUPABASE
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Six7 Supabase client initialized');
 
-    // Toggle Forms
-    tabLogin.addEventListener('click', () => {
-      loginForm.classList.remove('hidden');
-      signupForm.classList.add('hidden');
-      tabLogin.classList.add('bg-white', 'text-primary', 'shadow-sm');
-      tabLogin.classList.remove('text-on-surface-variant');
-      tabSignup.classList.remove('bg-white', 'text-primary', 'shadow-sm');
-      tabSignup.classList.add('text-on-surface-variant');
-    });
-
-    tabSignup.addEventListener('click', () => {
-      signupForm.classList.remove('hidden');
-      loginForm.classList.add('hidden');
-      tabSignup.classList.add('bg-white', 'text-primary', 'shadow-sm');
-      tabSignup.classList.remove('text-on-surface-variant');
-      tabLogin.classList.remove('bg-white', 'text-primary', 'shadow-sm');
-      tabLogin.classList.add('text-on-surface-variant');
-    });
-
-    // Password Visibility
-    togglePwdBtn.addEventListener('click', function() {
-      const input = document.getElementById('login-password');
-      const icon = this.querySelector('.material-symbols-outlined');
-      if (input.type === 'password') {
-        input.type = 'text';
-        icon.textContent = 'visibility_off';
-      } else {
-        input.type = 'password';
-        icon.textContent = 'visibility';
+    // 3. UI HELPERS
+    function showNotification(message, type) {
+      if (!type) type = 'info';
+      let notif = document.getElementById('notification-area');
+      if (!notif) {
+        notif = document.createElement('div');
+        notif.id = 'notification-area';
+        notif.className = 'fixed top-4 right-4 z-50 space-y-2';
+        document.body.appendChild(notif);
       }
-    });
+      const alert = document.createElement('div');
+      const bgColor = (type === 'error') ? 'bg-error text-on-error' : 'bg-primary text-on-primary';
+      alert.className = bgColor + ' px-6 py-3 rounded-xl shadow-lg text-sm font-bold transform transition-all duration-300 translate-x-full opacity-0';
+      alert.textContent = message;
+      notif.appendChild(alert);
+      requestAnimationFrame(() => alert.classList.remove('translate-x-full', 'opacity-0'));
+      setTimeout(() => {
+        alert.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => alert.remove(), 300);
+      }, 4000);
+    }
 
-    // Handle Login Submit
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('login-btn');
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      
-      const originalContent = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Signing in...';
-      
-      await handleLogin(email, password);
-      
-      btn.disabled = false;
-      btn.innerHTML = originalContent;
-    });
+    // 4. AUTH FUNCTIONS
+    async function handleLogin(email, password) {
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email: email.trim(), password: password });
+        if (error) throw error;
+        showNotification('Login successful! Redirecting...', 'success');
+        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+      } catch (err) {
+        showNotification(err.message || 'Login failed', 'error');
+        console.error('Login error:', err);
+      }
+    }
 
-    // Handle Signup Submit
-    signupForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('signup-btn');
-      const business = document.getElementById('signup-business').value;
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
+    async function handleSignup(email, password, businessName) {
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email: email.trim(),
+          password: password,
+          options: { data: { business_name: businessName } } // ✅ Correct syntax
+        });
+        if (error) throw error;
+        showNotification('Account created! Check email to confirm.', 'success');
+      } catch (err) {
+        showNotification(err.message || 'Signup failed', 'error');
+        console.error('Signup error:', err);
+      }
+    }
+
+    async function checkAuth() {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession(); // ✅ Correct syntax
+        if (session && window.location.href.includes('index.html')) {
+          window.location.href = 'dashboard.html';
+        }
+      } catch (err) { console.error('Auth check error:', err); }
+    }
+
+    // 5. EVENT LISTENERS
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
       
-      const originalContent = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Creating...';
+      // Tab Switching
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const tabLogin = document.getElementById('tab-login');
+      const tabSignup = document.getElementById('tab-signup');
       
-      await handleSignup(email, password, business);
+      tabLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        loginForm.classList.remove('hidden'); signupForm.classList.add('hidden');
+        tabLogin.classList.add('bg-white', 'text-primary', 'shadow-sm'); tabLogin.classList.remove('text-on-surface-variant');
+        tabSignup.classList.remove('bg-white', 'text-primary', 'shadow-sm'); tabSignup.classList.add('text-on-surface-variant');
+      });
       
-      btn.disabled = false;
-      btn.innerHTML = originalContent;
+      tabSignup.addEventListener('click', (e) => {
+        e.preventDefault();
+        signupForm.classList.remove('hidden'); loginForm.classList.add('hidden');
+        tabSignup.classList.add('bg-white', 'text-primary', 'shadow-sm'); tabSignup.classList.remove('text-on-surface-variant');
+        tabLogin.classList.remove('bg-white', 'text-primary', 'shadow-sm'); tabLogin.classList.add('text-on-surface-variant');
+      });
+
+      // Password Toggle
+      document.getElementById('toggle-password').addEventListener('click', function() {
+        const input = document.getElementById('login-password');
+        const icon = this.querySelector('.material-symbols-outlined');
+        if (input.type === 'password') { input.type = 'text'; icon.textContent = 'visibility_off'; } 
+        else { input.type = 'password'; icon.textContent = 'visibility'; }
+      });
+
+      // Form Submissions
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('login-btn');
+        const original = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Signing in...';
+        await handleLogin(document.getElementById('login-email').value, document.getElementById('login-password').value);
+        btn.disabled = false; btn.innerHTML = original;
+      });
+
+      document.getElementById('signup-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('signup-btn');
+        const original = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Creating...';
+        await handleSignup(document.getElementById('signup-email').value, document.getElementById('signup-password').value, document.getElementById('signup-business').value);
+        btn.disabled = false; btn.innerHTML = original;
+      });
     });
   </script>
 </body>
