@@ -5,37 +5,22 @@
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Dashboard - Six7 Invoicing</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-  
-  <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Tailwind Config -->
   <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
           colors: {
-            "primary": "#0A2540",
-            "primary-container": "#001c37",
-            "primary-fixed": "#d2e4ff",
-            "on-primary": "#ffffff",
-            "surface": "#f7fafc",
-            "surface-container-lowest": "#ffffff",
-            "surface-container-low": "#f1f4f6",
-            "on-surface": "#181c1e",
-            "on-surface-variant": "#43474d",
-            "outline-variant": "#c4c6ce",
-            "error": "#ba1a1a",
-            "on-error": "#ffffff",
-            "success": "#2ECC71",
-            "warning": "#F39C12"
+            "primary": "#0A2540", "primary-container": "#001c37", "primary-fixed": "#d2e4ff",
+            "on-primary": "#ffffff", "surface": "#f7fafc", "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f1f4f6", "on-surface": "#181c1e", "on-surface-variant": "#43474d",
+            "outline-variant": "#c4c6ce", "error": "#ba1a1a", "on-error": "#ffffff", 
+            "success": "#2ECC71", "warning": "#F39C12"
           },
           fontFamily: { "sans": ["Inter", "sans-serif"] },
           borderRadius: { "xl": "0.75rem" }
@@ -55,235 +40,253 @@
     @media (min-width: 768px) {
       .sidebar { transform: translateX(0) !important; }
     }
+    /* Loading Skeleton Animation */
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .skeleton { animation: pulse 1.5s ease-in-out infinite; background: linear-gradient(90deg, #f1f4f6 25%, #e0e3e5 50%, #f1f4f6 75%); background-size: 200% 100%; }
   </style>
 </head>
 <body class="text-on-surface min-h-screen flex">
 
-  <!-- Mobile Overlay -->
-  <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
-
-  <!-- Sidebar Navigation -->
-  <aside id="sidebar" class="sidebar sidebar-closed fixed md:static inset-y-0 left-0 z-50 w-64 bg-surface-container-lowest border-r border-outline-variant/20 flex flex-col">
-    <!-- Logo -->
-    <div class="p-6 border-b border-outline-variant/10">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-          <span class="material-symbols-outlined text-on-primary text-2xl">account_balance_wallet</span>
-        </div>
-        <span class="font-bold text-primary text-lg">Six7 Invoicing</span>
+  <!-- Auth Loading Overlay -->
+  <div id="auth-loading" class="fixed inset-0 bg-surface z-50 flex items-center justify-center">
+    <div class="text-center">
+      <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mb-4 mx-auto">
+        <span class="material-symbols-outlined text-on-primary text-3xl animate-spin">progress_activity</span>
       </div>
+      <p class="text-primary font-bold text-lg">Loading Dashboard...</p>
+      <p class="text-on-surface-variant text-sm mt-2">Verifying your session</p>
     </div>
+  </div>
 
-    <!-- Nav Links -->
-    <nav class="flex-1 p-4 space-y-2">
-      <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-on-primary font-medium" data-page="dashboard">
-        <span class="material-symbols-outlined">dashboard</span>
-        <span>Dashboard</span>
-      </a>
-      <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low font-medium" data-page="invoices">
-        <span class="material-symbols-outlined">receipt_long</span>
-        <span>Invoices</span>
-      </a>
-      <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low font-medium" data-page="clients">
-        <span class="material-symbols-outlined">people</span>
-        <span>Clients</span>
-      </a>
-      <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low font-medium" data-page="products">
-        <span class="material-symbols-outlined">inventory_2</span>
-        <span>Products</span>
-      </a>
-      <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low font-medium" data-page="settings">
-        <span class="material-symbols-outlined">settings</span>
-        <span>Settings</span>
-      </a>
-    </nav>
-
-    <!-- User Profile -->
-    <div class="p-4 border-t border-outline-variant/10">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary">person</span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="font-medium text-sm truncate" id="user-email">Loading...</p>
-          <p class="text-xs text-on-surface-variant" id="user-business">Six7 Business</p>
-        </div>
-        <button id="logout-btn" class="p-2 text-on-surface-variant hover:text-error transition-colors" title="Logout">
-          <span class="material-symbols-outlined">logout</span>
-        </button>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="flex-1 flex flex-col min-h-screen">
+  <!-- Main App (Hidden until auth confirmed) -->
+  <div id="app-content" class="hidden w-full flex">
     
-    <!-- Top Bar -->
-    <header class="bg-surface-container-lowest border-b border-outline-variant/20 px-4 md:px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <button id="menu-toggle" class="md:hidden p-2 text-on-surface-variant hover:text-primary">
-          <span class="material-symbols-outlined">menu</span>
-        </button>
-        <h1 class="text-xl font-bold text-primary" id="page-title">Dashboard</h1>
-      </div>
-      <div class="flex items-center gap-2">
-        <button class="p-2 text-on-surface-variant hover:text-primary relative" title="Notifications">
-          <span class="material-symbols-outlined">notifications</span>
-          <span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
-        </button>
-      </div>
-    </header>
+    <!-- Mobile Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
 
-    <!-- Page Content -->
-    <div class="flex-1 p-4 md:p-6 overflow-auto">
-      
-      <!-- DASHBOARD PAGE -->
-      <div id="page-dashboard" class="page-section">
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-on-surface-variant text-sm font-medium">Total Income</span>
-              <span class="material-symbols-outlined text-success">trending_up</span>
-            </div>
-            <p class="text-2xl font-bold text-primary" id="stat-income">LKR 0.00</p>
-            <p class="text-xs text-on-surface-variant mt-1">This month</p>
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar sidebar-closed fixed md:static inset-y-0 left-0 z-50 w-64 bg-surface-container-lowest border-r border-outline-variant/20 flex flex-col">
+      <!-- Logo -->
+      <div class="p-6 border-b border-outline-variant/10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-on-primary text-2xl">account_balance_wallet</span>
           </div>
-          <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-on-surface-variant text-sm font-medium">Pending</span>
-              <span class="material-symbols-outlined text-warning">schedule</span>
-            </div>
-            <p class="text-2xl font-bold text-warning" id="stat-pending">0</p>
-            <p class="text-xs text-on-surface-variant mt-1">Invoices awaiting payment</p>
-          </div>
-          <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-on-surface-variant text-sm font-medium">Overdue</span>
-              <span class="material-symbols-outlined text-error">error</span>
-            </div>
-            <p class="text-2xl font-bold text-error" id="stat-overdue">0</p>
-            <p class="text-xs text-on-surface-variant mt-1">Past due date</p>
-          </div>
-          <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-on-surface-variant text-sm font-medium">Total Clients</span>
-              <span class="material-symbols-outlined text-primary">people</span>
-            </div>
-            <p class="text-2xl font-bold text-primary" id="stat-clients">0</p>
-            <p class="text-xs text-on-surface-variant mt-1">Active clients</p>
-          </div>
-        </div>
-
-        <!-- Recent Invoices -->
-        <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 shadow-sm">
-          <div class="p-5 border-b border-outline-variant/10 flex items-center justify-between">
-            <h2 class="font-bold text-primary">Recent Invoices</h2>
-            <a href="#" class="text-sm text-primary font-medium hover:underline" data-nav="invoices">View All</a>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead class="bg-surface-container-low text-on-surface-variant font-medium">
-                <tr>
-                  <th class="px-5 py-3 text-left">Invoice #</th>
-                  <th class="px-5 py-3 text-left hidden sm:table-cell">Client</th>
-                  <th class="px-5 py-3 text-left">Date</th>
-                  <th class="px-5 py-3 text-right">Amount</th>
-                  <th class="px-5 py-3 text-center">Status</th>
-                  <th class="px-5 py-3 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="invoices-table-body" class="divide-y divide-outline-variant/10">
-                <tr>
-                  <td colspan="6" class="px-5 py-8 text-center text-on-surface-variant">
-                    <span class="material-symbols-outlined text-3xl mb-2 block">inbox</span>
-                    Loading invoices...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <span class="font-bold text-primary text-lg">Six7 Invoicing</span>
         </div>
       </div>
 
-      <!-- INVOICES PAGE (Hidden by default) -->
-      <div id="page-invoices" class="page-section hidden">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div class="flex items-center gap-2">
-            <input type="text" id="invoice-search" placeholder="Search invoices..." class="px-4 py-2.5 bg-surface-container-low border-0 rounded-xl text-on-surface focus:ring-2 focus:ring-primary w-full sm:w-64"/>
-            <select id="invoice-filter" class="px-4 py-2.5 bg-surface-container-low border-0 rounded-xl text-on-surface focus:ring-2 focus:ring-primary">
-              <option value="all">All Status</option>
-              <option value="paid">Paid</option>
-              <option value="pending">Pending</option>
-              <option value="overdue">Overdue</option>
-            </select>
+      <!-- Nav Links -->
+      <nav class="flex-1 p-4 space-y-2">
+        <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-on-primary font-medium" data-page="dashboard">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low font-medium" data-page="invoices">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>Invoices</span>
+        </a>
+        <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low font-medium" data-page="clients">
+          <span class="material-symbols-outlined">people</span>
+          <span>Clients</span>
+        </a>
+        <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low font-medium" data-page="products">
+          <span class="material-symbols-outlined">inventory_2</span>
+          <span>Products</span>
+        </a>
+        <a href="#" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low font-medium" data-page="settings">
+          <span class="material-symbols-outlined">settings</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <!-- User Profile -->
+      <div class="p-4 border-t border-outline-variant/10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary">person</span>
           </div>
-          <button id="new-invoice-btn" class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium flex items-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.98] transition-all">
-            <span class="material-symbols-outlined">add</span>
-            <span>New Invoice</span>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-sm truncate" id="user-email">Loading...</p>
+            <p class="text-xs text-on-surface-variant" id="user-business">Six7 Business</p>
+          </div>
+          <button id="logout-btn" class="p-2 text-on-surface-variant hover:text-error transition-colors" title="Logout">
+            <span class="material-symbols-outlined">logout</span>
           </button>
         </div>
+      </div>
+    </aside>
 
-        <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead class="bg-surface-container-low text-on-surface-variant font-medium">
-                <tr>
-                  <th class="px-5 py-3 text-left"><input type="checkbox" class="rounded"/></th>
-                  <th class="px-5 py-3 text-left">Invoice #</th>
-                  <th class="px-5 py-3 text-left hidden md:table-cell">Client</th>
-                  <th class="px-5 py-3 text-left hidden sm:table-cell">Issue Date</th>
-                  <th class="px-5 py-3 text-left hidden sm:table-cell">Due Date</th>
-                  <th class="px-5 py-3 text-right">Amount</th>
-                  <th class="px-5 py-3 text-center">Status</th>
-                  <th class="px-5 py-3 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="invoices-list-body" class="divide-y divide-outline-variant/10">
-                <!-- Populated by JS -->
-              </tbody>
-            </table>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-h-screen">
+      
+      <!-- Top Bar -->
+      <header class="bg-surface-container-lowest border-b border-outline-variant/20 px-4 md:px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button id="menu-toggle" class="md:hidden p-2 text-on-surface-variant hover:text-primary">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <h1 class="text-xl font-bold text-primary" id="page-title">Dashboard</h1>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="p-2 text-on-surface-variant hover:text-primary relative" title="Notifications">
+            <span class="material-symbols-outlined">notifications</span>
+            <span class="absolute top-1 right-1 w-2 h-2 bg-error rounded-full"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <div class="flex-1 p-4 md:p-6 overflow-auto">
+        
+        <!-- DASHBOARD PAGE -->
+        <div id="page-dashboard" class="page-section">
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-on-surface-variant text-sm font-medium">Total Income</span>
+                <span class="material-symbols-outlined text-success">trending_up</span>
+              </div>
+              <p class="text-2xl font-bold text-primary skeleton" id="stat-income" style="width: 120px; height: 32px;"></p>
+              <p class="text-xs text-on-surface-variant mt-1">This month</p>
+            </div>
+            <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-on-surface-variant text-sm font-medium">Pending</span>
+                <span class="material-symbols-outlined text-warning">schedule</span>
+              </div>
+              <p class="text-2xl font-bold text-warning skeleton" id="stat-pending" style="width: 60px; height: 32px;"></p>
+              <p class="text-xs text-on-surface-variant mt-1">Invoices awaiting payment</p>
+            </div>
+            <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-on-surface-variant text-sm font-medium">Overdue</span>
+                <span class="material-symbols-outlined text-error">error</span>
+              </div>
+              <p class="text-2xl font-bold text-error skeleton" id="stat-overdue" style="width: 60px; height: 32px;"></p>
+              <p class="text-xs text-on-surface-variant mt-1">Past due date</p>
+            </div>
+            <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-on-surface-variant text-sm font-medium">Total Clients</span>
+                <span class="material-symbols-outlined text-primary">people</span>
+              </div>
+              <p class="text-2xl font-bold text-primary skeleton" id="stat-clients" style="width: 60px; height: 32px;"></p>
+              <p class="text-xs text-on-surface-variant mt-1">Active clients</p>
+            </div>
+          </div>
+
+          <!-- Recent Invoices -->
+          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 shadow-sm">
+            <div class="p-5 border-b border-outline-variant/10 flex items-center justify-between">
+              <h2 class="font-bold text-primary">Recent Invoices</h2>
+              <a href="#" class="text-sm text-primary font-medium hover:underline" data-nav="invoices">View All</a>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-surface-container-low text-on-surface-variant font-medium">
+                  <tr>
+                    <th class="px-5 py-3 text-left">Invoice #</th>
+                    <th class="px-5 py-3 text-left hidden sm:table-cell">Client</th>
+                    <th class="px-5 py-3 text-left">Date</th>
+                    <th class="px-5 py-3 text-right">Amount</th>
+                    <th class="px-5 py-3 text-center">Status</th>
+                    <th class="px-5 py-3 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="invoices-table-body" class="divide-y divide-outline-variant/10">
+                  <tr>
+                    <td colspan="6" class="px-5 py-8 text-center text-on-surface-variant">
+                      <span class="material-symbols-outlined text-3xl mb-2 block animate-spin">progress_activity</span>
+                      Loading invoices...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- CLIENTS PAGE (Placeholder) -->
-      <div id="page-clients" class="page-section hidden">
-        <div class="text-center py-12">
-          <span class="material-symbols-outlined text-5xl text-on-surface-variant/40 mb-4">people</span>
-          <h3 class="text-lg font-bold text-primary mb-2">Clients Management</h3>
-          <p class="text-on-surface-variant mb-6">Add, edit, and manage your client database.</p>
-          <button class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium">+ Add Client</button>
+        <!-- INVOICES PAGE (Hidden by default) -->
+        <div id="page-invoices" class="page-section hidden">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-2">
+              <input type="text" id="invoice-search" placeholder="Search invoices..." class="px-4 py-2.5 bg-surface-container-low border-0 rounded-xl text-on-surface focus:ring-2 focus:ring-primary w-full sm:w-64"/>
+              <select id="invoice-filter" class="px-4 py-2.5 bg-surface-container-low border-0 rounded-xl text-on-surface focus:ring-2 focus:ring-primary">
+                <option value="all">All Status</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            </div>
+            <button id="new-invoice-btn" class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium flex items-center gap-2 shadow-lg hover:shadow-xl active:scale-[0.98] transition-all">
+              <span class="material-symbols-outlined">add</span>
+              <span>New Invoice</span>
+            </button>
+          </div>
+
+          <div class="bg-surface-container-lowest rounded-xl border border-outline-variant/10 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-surface-container-low text-on-surface-variant font-medium">
+                  <tr>
+                    <th class="px-5 py-3 text-left"><input type="checkbox" class="rounded"/></th>
+                    <th class="px-5 py-3 text-left">Invoice #</th>
+                    <th class="px-5 py-3 text-left hidden md:table-cell">Client</th>
+                    <th class="px-5 py-3 text-left hidden sm:table-cell">Issue Date</th>
+                    <th class="px-5 py-3 text-left hidden sm:table-cell">Due Date</th>
+                    <th class="px-5 py-3 text-right">Amount</th>
+                    <th class="px-5 py-3 text-center">Status</th>
+                    <th class="px-5 py-3 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="invoices-list-body" class="divide-y divide-outline-variant/10">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- PRODUCTS PAGE (Placeholder) -->
-      <div id="page-products" class="page-section hidden">
-        <div class="text-center py-12">
-          <span class="material-symbols-outlined text-5xl text-on-surface-variant/40 mb-4">inventory_2</span>
-          <h3 class="text-lg font-bold text-primary mb-2">Products & Services</h3>
-          <p class="text-on-surface-variant mb-6">Manage your pricelist for faster invoicing.</p>
-          <button class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium">+ Add Product</button>
+        <!-- CLIENTS PAGE (Placeholder) -->
+        <div id="page-clients" class="page-section hidden">
+          <div class="text-center py-12">
+            <span class="material-symbols-outlined text-5xl text-on-surface-variant/40 mb-4">people</span>
+            <h3 class="text-lg font-bold text-primary mb-2">Clients Management</h3>
+            <p class="text-on-surface-variant mb-6">Add, edit, and manage your client database.</p>
+            <button class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium">+ Add Client</button>
+          </div>
         </div>
-      </div>
 
-      <!-- SETTINGS PAGE (Placeholder) -->
-      <div id="page-settings" class="page-section hidden">
-        <div class="text-center py-12">
-          <span class="material-symbols-outlined text-5xl text-on-surface-variant/40 mb-4">settings</span>
-          <h3 class="text-lg font-bold text-primary mb-2">Business Settings</h3>
-          <p class="text-on-surface-variant mb-6">Configure your profile, branding, and preferences.</p>
-          <button class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium">Edit Profile</button>
+        <!-- PRODUCTS PAGE (Placeholder) -->
+        <div id="page-products" class="page-section hidden">
+          <div class="text-center py-12">
+            <span class="material-symbols-outlined text-5xl text-on-surface-variant/40 mb-4">inventory_2</span>
+            <h3 class="text-lg font-bold text-primary mb-2">Products & Services</h3>
+            <p class="text-on-surface-variant mb-6">Manage your pricelist for faster invoicing.</p>
+            <button class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium">+ Add Product</button>
+          </div>
         </div>
+
+        <!-- SETTINGS PAGE (Placeholder) -->
+        <div id="page-settings" class="page-section hidden">
+          <div class="text-center py-12">
+            <span class="material-symbols-outlined text-5xl text-on-surface-variant/40 mb-4">settings</span>
+            <h3 class="text-lg font-bold text-primary mb-2">Business Settings</h3>
+            <p class="text-on-surface-variant mb-6">Configure your profile, branding, and preferences.</p>
+            <button class="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-medium">Edit Profile</button>
+          </div>
+        </div>
+
       </div>
+    </main>
 
-    </div>
-  </main>
-
-  <!-- Floating Action Button (Mobile) -->
-  <button id="fab-new-invoice" class="fixed bottom-6 right-6 md:hidden w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center z-30 active:scale-95 transition-transform">
-    <span class="material-symbols-outlined text-2xl">add</span>
-  </button>
+    <!-- Floating Action Button (Mobile) -->
+    <button id="fab-new-invoice" class="fixed bottom-6 right-6 md:hidden w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center z-30 active:scale-95 transition-transform">
+      <span class="material-symbols-outlined text-2xl">add</span>
+    </button>
+  </div>
 
   <!-- Notification Area -->
   <div id="notification-area" class="fixed top-4 right-4 z-50 space-y-2"></div>
@@ -295,18 +298,38 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhzamh1aXl5eG90c3lxam5jdnZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MTA0MDMsImV4cCI6MjA5MDI4NjQwM30.p-CXtR_bY20n1fq8hz1hvpWu9gNT3dWPoVs7NNiwhRY';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let currentUser = null;
+    let authChecked = false;
 
-    // 2. AUTH GUARD
+    // 2. AUTH GUARD (With Loading State)
     async function checkAuth() {
-      const {  { session } } = await supabaseClient.auth.getSession();
-      if (!session) {
-        window.location.href = '../index.html';
-        return;
+      try {
+        const {  { session } } = await supabaseClient.auth.getSession();
+        
+        if (!session) {
+          // Not authenticated - redirect to login
+          window.location.href = '../index.html';
+          return;
+        }
+        
+        currentUser = session.user;
+        
+        // Hide loading, show app
+        document.getElementById('auth-loading').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+        
+        // Load user data
+        await loadUserProfile();
+        await loadDashboardStats();
+        await loadRecentInvoices();
+        
+        authChecked = true;
+      } catch (err) {
+        console.error('Auth check error:', err);
+        showNotification('Session expired. Please login again.', 'error');
+        setTimeout(() => {
+          window.location.href = '../index.html';
+        }, 2000);
       }
-      currentUser = session.user;
-      loadUserProfile();
-      loadDashboardStats();
-      loadRecentInvoices();
     }
 
     // 3. UI HELPERS
@@ -343,17 +366,25 @@
       return `<span class="px-3 py-1 rounded-full text-xs font-bold uppercase ${styles[status] || styles['draft']}">${status}</span>`;
     }
 
+    function removeSkeleton(elementId, value) {
+      const el = document.getElementById(elementId);
+      if (el) {
+        el.classList.remove('skeleton');
+        el.textContent = value;
+      }
+    }
+
     // 4. DATA LOADING
     async function loadUserProfile() {
-      const {  { session } } = await supabaseClient.auth.getSession();
-      const email = session?.user?.email || 'User';
-      document.getElementById('user-email').textContent = email;
+      if (!currentUser) return;
+      
+      document.getElementById('user-email').textContent = currentUser.email || 'User';
       
       // Try to fetch business name from profiles
       const {  { profile } } = await supabaseClient
         .from('profiles')
         .select('business_name')
-        .eq('id', session.user.id)
+        .eq('id', currentUser.id)
         .single();
       
       if (profile?.business_name) {
@@ -362,6 +393,8 @@
     }
 
     async function loadDashboardStats() {
+      if (!currentUser) return;
+      
       const userId = currentUser.id;
       
       // Total Income (this month)
@@ -377,7 +410,7 @@
         .gte('issue_date', startOfMonth.toISOString());
       
       const income = total?.reduce((sum, inv) => sum + (inv.total_amount || 0), 0) || 0;
-      document.getElementById('stat-income').textContent = formatCurrency(income);
+      removeSkeleton('stat-income', formatCurrency(income));
 
       // Pending Count
       const { count: pending } = await supabaseClient
@@ -385,7 +418,7 @@
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .eq('status', 'pending');
-      document.getElementById('stat-pending').textContent = pending || 0;
+      removeSkeleton('stat-pending', pending || 0);
 
       // Overdue Count
       const { count: overdue } = await supabaseClient
@@ -393,18 +426,20 @@
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId)
         .eq('status', 'overdue');
-      document.getElementById('stat-overdue').textContent = overdue || 0;
+      removeSkeleton('stat-overdue', overdue || 0);
 
       // Total Clients
       const { count: clients } = await supabaseClient
         .from('clients')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId);
-      document.getElementById('stat-clients').textContent = clients || 0;
+      removeSkeleton('stat-clients', clients || 0);
     }
 
     async function loadRecentInvoices() {
-      const { data: invoices, error } = await supabaseClient
+      if (!currentUser) return;
+      
+      const {  invoices, error } = await supabaseClient
         .from('invoices')
         .select(`
           id,
@@ -420,12 +455,26 @@
 
       const tbody = document.getElementById('invoices-table-body');
       
-      if (error || !invoices?.length) {
+      if (error) {
+        console.error('Error loading invoices:', error);
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-5 py-8 text-center text-error">
+              <span class="material-symbols-outlined text-3xl mb-2 block">error</span>
+              Error loading invoices
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!invoices || invoices.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="6" class="px-5 py-8 text-center text-on-surface-variant">
               <span class="material-symbols-outlined text-3xl mb-2 block">inbox</span>
-              ${error ? 'Error loading invoices' : 'No invoices yet'}
+              No invoices yet
+              <p class="text-sm mt-2">Create your first invoice to get started</p>
             </td>
           </tr>
         `;
@@ -488,7 +537,9 @@
     }
 
     async function loadInvoicesList() {
-      const { data: invoices, error } = await supabaseClient
+      if (!currentUser) return;
+      
+      const {  invoices, error } = await supabaseClient
         .from('invoices')
         .select(`
           id,
@@ -504,12 +555,24 @@
 
       const tbody = document.getElementById('invoices-list-body');
       
-      if (error || !invoices?.length) {
+      if (error) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="px-5 py-8 text-center text-error">
+              <span class="material-symbols-outlined text-3xl mb-2 block">error</span>
+              Error loading invoices
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      if (!invoices || invoices.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="8" class="px-5 py-8 text-center text-on-surface-variant">
               <span class="material-symbols-outlined text-3xl mb-2 block">inbox</span>
-              ${error ? 'Error loading invoices' : 'No invoices found'}
+              No invoices found
             </td>
           </tr>
         `;
@@ -544,6 +607,7 @@
 
     // 6. EVENT LISTENERS
     document.addEventListener('DOMContentLoaded', async () => {
+      // Start auth check immediately
       await checkAuth();
 
       // Sidebar toggle (mobile)
@@ -572,10 +636,10 @@
         });
       });
 
-      // Logout
+      // Logout - FIXED PATH
       document.getElementById('logout-btn')?.addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
-        window.location.href = '../index.html';
+        window.location.href = '../index.html';  // ✅ Correct path from /dashboard/ to root
       });
 
       // New Invoice buttons
