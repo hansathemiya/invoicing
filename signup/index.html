@@ -130,6 +130,8 @@
   </div>
 
   <script>
+    console.log('🔍 [DEBUG] Script starting...');
+
     // --- Config ---
     const CONFIG = {
       supabaseUrl: 'https://hsjhuiyyxotsyqjncvvm.supabase.co',
@@ -137,14 +139,21 @@
       redirectAfterSignup: '/dashboard'
     };
 
+    console.log('🔍 [DEBUG] Config loaded:', CONFIG.supabaseUrl);
+
     // --- Init Supabase ---
-    let supabaseClient;
+    let supabaseClient = null;
     try {
+      console.log('🔍 [DEBUG] window.supabase exists:', typeof window.supabase);
       if (typeof window.supabase !== 'undefined') {
         supabaseClient = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
-        console.log('✅ Supabase initialized');
+        console.log('✅ [DEBUG] Supabase client created:', supabaseClient);
+      } else {
+        console.error('❌ [DEBUG] Supabase SDK not loaded!');
       }
-    } catch (e) { console.error('❌ Supabase init failed:', e); }
+    } catch (e) { 
+      console.error('❌ [DEBUG] Supabase init failed:', e); 
+    }
 
     // --- DOM Elements ---
     const form = document.getElementById('signup-form');
@@ -156,9 +165,17 @@
     const signupBtn = document.getElementById('signup-btn');
     const notificationArea = document.getElementById('notification-area');
 
+    console.log('🔍 [DEBUG] Form element found:', form !== null);
+    console.log('🔍 [DEBUG] Button element found:', signupBtn !== null);
+
     // --- Notifications ---
     function showNotification(message, type = 'info') {
-      if (!notificationArea) return;
+      console.log('🔔 [NOTIFICATION]', type, ':', message);
+      if (!notificationArea) {
+        console.error('❌ Notification area not found!');
+        alert(message); // Fallback
+        return;
+      }
       const colors = { error: 'bg-error text-on-error', success: 'bg-success text-white', info: 'bg-primary text-on-primary' };
       const icons = { error: 'error', success: 'check_circle', info: 'info' };
       const alert = document.createElement('div');
@@ -170,17 +187,19 @@
 
     // --- Validation ---
     function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase()); }
-    function showError(field, msg) { const el = document.getElementById(field + '-error'); if (el) { el.textContent = msg; el.classList.remove('hidden'); } }
+    function showError(field, msg) { const el = document.getElementById(field + '-error'); if (el) { el.textContent = msg; el.classList.remove('hidden'); console.log('⚠️ [ERROR]', field, ':', msg); } }
     function clearErrors() { document.querySelectorAll('[id$="-error"]').forEach(el => { el.textContent = ''; el.classList.add('hidden'); }); }
 
     // --- Loading State ---
     function setLoading(loading) {
       signupBtn.disabled = loading;
       signupBtn.innerHTML = loading ? '<span class="material-symbols-outlined animate-spin">progress_activity</span> Creating...' : '<span>Create Account</span><span class="material-symbols-outlined text-xl">add_circle</span>';
+      console.log('🔍 [DEBUG] Loading state:', loading);
     }
 
     // --- Signup Handler ---
     async function handleSignup(e) {
+      console.log('🚀 [DEBUG] Form submitted!');
       e.preventDefault();
       clearErrors();
       
@@ -190,6 +209,8 @@
       const phone = phoneInput.value.trim();
       const password = passwordInput.value;
       
+      console.log('🔍 [DEBUG] Form values:', { business, name, email, phone, passwordLength: password.length });
+      
       // Validate
       if (!business) { showError('business', 'Business name is required'); return; }
       if (!name) { showError('name', 'Your name is required'); return; }
@@ -198,14 +219,20 @@
       if (!password) { showError('password', 'Password is required'); return; }
       if (password.length < 6) { showError('password', 'Password must be at least 6 characters'); return; }
       
+      console.log('✅ [DEBUG] Validation passed');
       setLoading(true);
       
       try {
-        if (!supabaseClient) throw new Error('Supabase not initialized');
+        if (!supabaseClient) {
+          console.error('❌ [DEBUG] Supabase client is null!');
+          throw new Error('Supabase not initialized. Check console for details.');
+        }
         
-        const { data, error } = await supabaseClient.auth.signUp({
-          email,
-          password,
+        console.log('🚀 [DEBUG] Calling supabase.auth.signUp...');
+        
+        const result = await supabaseClient.auth.signUp({
+          email: email,
+          password: password,
           options: {
              {
               business_name: business,
@@ -215,13 +242,19 @@
           }
         });
         
-        if (error) throw error;
+        console.log('🔍 [DEBUG] SignUp result:', result);
         
+        if (result.error) {
+          console.error('❌ [DEBUG] SignUp error:', result.error);
+          throw result.error;
+        }
+        
+        console.log('✅ [DEBUG] SignUp success!');
         showNotification('Account created! Redirecting...', 'success');
         setTimeout(() => { window.location.href = CONFIG.redirectAfterSignup; }, 1500);
         
       } catch (err) {
-        console.error('Signup error:', err);
+        console.error('❌ [DEBUG] Signup caught error:', err);
         let msg = 'Signup failed. Please try again.';
         if (err.message?.includes('User already registered')) { msg = 'An account with this email already exists'; showError('email', msg); }
         else if (err.message) { msg = err.message; }
@@ -232,29 +265,55 @@
     }
 
     // --- Event Listeners ---
-    form.addEventListener('submit', handleSignup);
+    console.log('🔍 [DEBUG] Adding form submit listener...');
+    if (form) {
+      form.addEventListener('submit', handleSignup);
+      console.log('✅ [DEBUG] Form listener attached');
+    } else {
+      console.error('❌ [DEBUG] Form element not found!');
+    }
     
     // Real-time validation (optional)
-    emailInput.addEventListener('blur', () => {
-      if (emailInput.value && !validateEmail(emailInput.value)) { showError('email', 'Please enter a valid email'); }
-      else { document.getElementById('email-error')?.classList.add('hidden'); }
-    });
+    if (emailInput) {
+      emailInput.addEventListener('blur', () => {
+        if (emailInput.value && !validateEmail(emailInput.value)) { showError('email', 'Please enter a valid email'); }
+        else { document.getElementById('email-error')?.classList.add('hidden'); }
+      });
+    }
     
-    passwordInput.addEventListener('blur', () => {
-      if (passwordInput.value && passwordInput.value.length < 6) { showError('password', 'Password must be at least 6 characters'); }
-      else { document.getElementById('password-error')?.classList.add('hidden'); }
-    });
+    if (passwordInput) {
+      passwordInput.addEventListener('blur', () => {
+        if (passwordInput.value && passwordInput.value.length < 6) { showError('password', 'Password must be at least 6 characters'); }
+        else { document.getElementById('password-error')?.classList.add('hidden'); }
+      });
+    }
 
     // --- Auth Check (redirect if already logged in) ---
     async function checkAuth() {
-      if (!supabaseClient) return;
+      console.log('🔍 [DEBUG] Checking auth status...');
+      if (!supabaseClient) { console.warn('⚠️ [DEBUG] Supabase client not ready'); return; }
       try {
-        const { data } = await supabaseClient.auth.getSession();
-        if (data?.session) { window.location.href = CONFIG.redirectAfterSignup; }
-      } catch (e) { console.error('Auth check failed:', e); }
+        const result = await supabaseClient.auth.getSession();
+        console.log('🔍 [DEBUG] Session result:', result);
+        if (result.data?.session) { 
+          console.log('✅ [DEBUG] User already logged in, redirecting...');
+          window.location.href = CONFIG.redirectAfterSignup; 
+        }
+      } catch (e) { console.error('❌ [DEBUG] Auth check failed:', e); }
     }
     
-    document.addEventListener('DOMContentLoaded', checkAuth);
+    console.log('🔍 [DEBUG] DOM Ready State:', document.readyState);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('🔍 [DEBUG] DOMContentLoaded fired');
+        checkAuth();
+      });
+    } else {
+      console.log('🔍 [DEBUG] DOM already loaded, checking auth now');
+      checkAuth();
+    }
+
+    console.log('✅ [DEBUG] Script initialization complete');
   </script>
 </body>
 </html>
