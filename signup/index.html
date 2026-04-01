@@ -37,7 +37,6 @@
 <body class="text-on-surface min-h-screen flex items-center justify-center p-4 md:p-6">
   <div id="notification-area" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"></div>
   <div class="w-full max-w-[480px] flex flex-col items-center fade-in">
-    <!-- Brand -->
     <div class="mb-6 md:mb-8 text-center">
       <div class="w-14 h-14 md:w-16 md:h-16 bg-primary rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg shadow-primary/20">
         <span class="material-symbols-outlined text-on-primary text-2xl md:text-3xl">app_registration</span>
@@ -45,11 +44,8 @@
       <h1 class="text-xl md:text-2xl font-extrabold tracking-tight text-primary mb-1">Create Your Account</h1>
       <p class="text-sm text-on-surface-variant">Join Six7 Invoicing today</p>
     </div>
-    
-    <!-- Signup Card -->
     <div class="w-full bg-surface-container-lowest rounded-xl md:rounded-2xl p-6 md:p-8 shadow-[0_20px_40px_rgba(0,15,34,0.04)] border border-outline-variant/20">
       <form id="signup-form" class="space-y-4" novalidate>
-        <!-- Business Name -->
         <div class="space-y-2">
           <label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1" for="business">Business Name</label>
           <div class="relative">
@@ -60,8 +56,6 @@
           </div>
           <p id="business-error" class="text-error text-xs px-1 hidden"></p>
         </div>
-        
-        <!-- Registrant Name -->
         <div class="space-y-2">
           <label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1" for="name">Your Name</label>
           <div class="relative">
@@ -72,8 +66,6 @@
           </div>
           <p id="name-error" class="text-error text-xs px-1 hidden"></p>
         </div>
-        
-        <!-- Email -->
         <div class="space-y-2">
           <label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1" for="email">Email Address</label>
           <div class="relative">
@@ -84,8 +76,6 @@
           </div>
           <p id="email-error" class="text-error text-xs px-1 hidden"></p>
         </div>
-        
-        <!-- Phone (Optional) -->
         <div class="space-y-2">
           <label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1" for="phone">Phone Number <span class="text-on-surface-variant/60 font-normal">(Optional)</span></label>
           <div class="relative">
@@ -95,8 +85,6 @@
             <input class="block w-full pl-12 pr-4 py-3 bg-surface-container-low border-0 rounded-xl text-on-surface font-medium focus:ring-2 focus:ring-primary focus:bg-white transition-all" id="phone" type="tel" placeholder="+94 7X XXX XXXX"/>
           </div>
         </div>
-        
-        <!-- Password -->
         <div class="space-y-2">
           <label class="block text-xs font-bold uppercase tracking-widest text-on-surface-variant px-1" for="password">Password</label>
           <div class="relative">
@@ -108,212 +96,106 @@
           <p id="password-error" class="text-error text-xs px-1 hidden"></p>
           <p class="text-xs text-on-surface-variant px-1">Must be at least 6 characters</p>
         </div>
-        
-        <!-- Submit -->
         <button class="w-full py-3.5 bg-primary text-on-primary rounded-xl font-bold text-base shadow-lg hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2" type="submit" id="signup-btn">
           <span>Create Account</span>
           <span class="material-symbols-outlined text-xl">add_circle</span>
         </button>
       </form>
-      
-      <!-- Footer Links -->
       <div class="mt-6 pt-6 border-t border-outline-variant/10 text-center">
-        <p class="text-sm text-on-surface-variant">
-          Already have an account? 
-          <a class="font-bold text-primary hover:underline" href="/login">Sign In</a>
-        </p>
+        <p class="text-sm text-on-surface-variant">Already have an account? <a class="font-bold text-primary hover:underline" href="/login">Sign In</a></p>
       </div>
       <div class="mt-2 text-center">
         <p class="text-xs text-on-surface-variant">© 2026 Six7 Invoicing</p>
       </div>
     </div>
   </div>
-
   <script>
-    console.log('🔍 [DEBUG] Script starting...');
-
-    // --- Config ---
-    const CONFIG = {
+    var CONFIG = {
       supabaseUrl: 'https://hsjhuiyyxotsyqjncvvm.supabase.co',
       supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhzamh1aXl5eG90c3lxam5jdnZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MTA0MDMsImV4cCI6MjA5MDI4NjQwM30.p-CXtR_bY20n1fq8hz1hvpWu9gNT3dWPoVs7NNiwhRY',
       redirectAfterSignup: '/dashboard'
     };
-
-    console.log('🔍 [DEBUG] Config loaded:', CONFIG.supabaseUrl);
-
-    // --- Init Supabase ---
-    let supabaseClient = null;
-    try {
-      console.log('🔍 [DEBUG] window.supabase exists:', typeof window.supabase);
-      if (typeof window.supabase !== 'undefined') {
-        supabaseClient = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
-        console.log('✅ [DEBUG] Supabase client created:', supabaseClient);
-      } else {
-        console.error('❌ [DEBUG] Supabase SDK not loaded!');
-      }
-    } catch (e) { 
-      console.error('❌ [DEBUG] Supabase init failed:', e); 
+    var supabaseClient = null;
+    if (typeof window.supabase !== 'undefined') {
+      supabaseClient = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
     }
-
-    // --- DOM Elements ---
-    const form = document.getElementById('signup-form');
-    const businessInput = document.getElementById('business');
-    const nameInput = document.getElementById('name');
-    const emailInput = document.getElementById('email');
-    const phoneInput = document.getElementById('phone');
-    const passwordInput = document.getElementById('password');
-    const signupBtn = document.getElementById('signup-btn');
-    const notificationArea = document.getElementById('notification-area');
-
-    console.log('🔍 [DEBUG] Form element found:', form !== null);
-    console.log('🔍 [DEBUG] Button element found:', signupBtn !== null);
-
-    // --- Notifications ---
-    function showNotification(message, type = 'info') {
-      console.log('🔔 [NOTIFICATION]', type, ':', message);
-      if (!notificationArea) {
-        console.error('❌ Notification area not found!');
-        alert(message); // Fallback
-        return;
-      }
-      const colors = { error: 'bg-error text-on-error', success: 'bg-success text-white', info: 'bg-primary text-on-primary' };
-      const icons = { error: 'error', success: 'check_circle', info: 'info' };
-      const alert = document.createElement('div');
-      alert.className = `${colors[type] || colors.info} px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 fade-in pointer-events-auto`;
-      alert.innerHTML = `<span class="material-symbols-outlined text-lg">${icons[type] || icons.info}</span><span>${message}</span>`;
-      notificationArea.appendChild(alert);
-      setTimeout(() => { alert.style.opacity = '0'; alert.style.transform = 'translateY(-10px)'; setTimeout(() => alert.remove(), 300); }, 5000);
+    var form = document.getElementById('signup-form');
+    var businessInput = document.getElementById('business');
+    var nameInput = document.getElementById('name');
+    var emailInput = document.getElementById('email');
+    var phoneInput = document.getElementById('phone');
+    var passwordInput = document.getElementById('password');
+    var signupBtn = document.getElementById('signup-btn');
+    var notificationArea = document.getElementById('notification-area');
+    function showNotification(message, type) {
+      if (!type) type = 'info';
+      if (!notificationArea) { alert(message); return; }
+      var colors = { error: 'bg-error text-on-error', success: 'bg-success text-white', info: 'bg-primary text-on-primary' };
+      var icons = { error: 'error', success: 'check_circle', info: 'info' };
+      var alertBox = document.createElement('div');
+      alertBox.className = (colors[type] || colors.info) + ' px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 fade-in pointer-events-auto';
+      alertBox.innerHTML = '<span class="material-symbols-outlined text-lg">' + (icons[type] || icons.info) + '</span><span>' + message + '</span>';
+      notificationArea.appendChild(alertBox);
+      setTimeout(function() { alertBox.style.opacity = '0'; alertBox.style.transform = 'translateY(-10px)'; setTimeout(function() { alertBox.remove(); }, 300); }, 5000);
     }
-
-    // --- Validation ---
     function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email).toLowerCase()); }
-    function showError(field, msg) { const el = document.getElementById(field + '-error'); if (el) { el.textContent = msg; el.classList.remove('hidden'); console.log('⚠️ [ERROR]', field, ':', msg); } }
-    function clearErrors() { document.querySelectorAll('[id$="-error"]').forEach(el => { el.textContent = ''; el.classList.add('hidden'); }); }
-
-    // --- Loading State ---
+    function showError(field, msg) { var el = document.getElementById(field + '-error'); if (el) { el.textContent = msg; el.classList.remove('hidden'); } }
+    function clearErrors() { var errors = document.querySelectorAll('[id$="-error"]'); for (var i = 0; i < errors.length; i++) { errors[i].textContent = ''; errors[i].classList.add('hidden'); } }
     function setLoading(loading) {
       signupBtn.disabled = loading;
-      signupBtn.innerHTML = loading ? '<span class="material-symbols-outlined animate-spin">progress_activity</span> Creating...' : '<span>Create Account</span><span class="material-symbols-outlined text-xl">add_circle</span>';
-      console.log('🔍 [DEBUG] Loading state:', loading);
+      if (loading) { signupBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Creating...'; }
+      else { signupBtn.innerHTML = '<span>Create Account</span><span class="material-symbols-outlined text-xl">add_circle</span>'; }
     }
-
-    // --- Signup Handler ---
     async function handleSignup(e) {
-      console.log('🚀 [DEBUG] Form submitted!');
       e.preventDefault();
       clearErrors();
-      
-      const business = businessInput.value.trim();
-      const name = nameInput.value.trim();
-      const email = emailInput.value.trim();
-      const phone = phoneInput.value.trim();
-      const password = passwordInput.value;
-      
-      console.log('🔍 [DEBUG] Form values:', { business, name, email, phone, passwordLength: password.length });
-      
-      // Validate
+      var business = businessInput.value.trim();
+      var name = nameInput.value.trim();
+      var email = emailInput.value.trim();
+      var phone = phoneInput.value.trim();
+      var password = passwordInput.value;
       if (!business) { showError('business', 'Business name is required'); return; }
       if (!name) { showError('name', 'Your name is required'); return; }
       if (!email) { showError('email', 'Email is required'); return; }
       if (!validateEmail(email)) { showError('email', 'Please enter a valid email'); return; }
       if (!password) { showError('password', 'Password is required'); return; }
       if (password.length < 6) { showError('password', 'Password must be at least 6 characters'); return; }
-      
-      console.log('✅ [DEBUG] Validation passed');
       setLoading(true);
-      
       try {
-        if (!supabaseClient) {
-          console.error('❌ [DEBUG] Supabase client is null!');
-          throw new Error('Supabase not initialized. Check console for details.');
-        }
-        
-        console.log('🚀 [DEBUG] Calling supabase.auth.signUp...');
-        
-        const result = await supabaseClient.auth.signUp({
+        if (!supabaseClient) { throw new Error('Supabase not initialized'); }
+        var result = await supabaseClient.auth.signUp({
           email: email,
           password: password,
           options: {
-             {
+            data: {
               business_name: business,
               registrant_name: name,
               phone: phone || null
             }
           }
         });
-        
-        console.log('🔍 [DEBUG] SignUp result:', result);
-        
-        if (result.error) {
-          console.error('❌ [DEBUG] SignUp error:', result.error);
-          throw result.error;
-        }
-        
-        console.log('✅ [DEBUG] SignUp success!');
+        if (result.error) { throw result.error; }
         showNotification('Account created! Redirecting...', 'success');
-        setTimeout(() => { window.location.href = CONFIG.redirectAfterSignup; }, 1500);
-        
+        setTimeout(function() { window.location.href = CONFIG.redirectAfterSignup; }, 1500);
       } catch (err) {
-        console.error('❌ [DEBUG] Signup caught error:', err);
-        let msg = 'Signup failed. Please try again.';
-        if (err.message?.includes('User already registered')) { msg = 'An account with this email already exists'; showError('email', msg); }
+        console.error('Signup error:', err);
+        var msg = 'Signup failed. Please try again.';
+        if (err.message && err.message.includes('User already registered')) { msg = 'An account with this email already exists'; showError('email', msg); }
         else if (err.message) { msg = err.message; }
         showNotification(msg, 'error');
-      } finally {
-        setLoading(false);
-      }
+      } finally { setLoading(false); }
     }
-
-    // --- Event Listeners ---
-    console.log('🔍 [DEBUG] Adding form submit listener...');
-    if (form) {
-      form.addEventListener('submit', handleSignup);
-      console.log('✅ [DEBUG] Form listener attached');
-    } else {
-      console.error('❌ [DEBUG] Form element not found!');
-    }
-    
-    // Real-time validation (optional)
-    if (emailInput) {
-      emailInput.addEventListener('blur', () => {
-        if (emailInput.value && !validateEmail(emailInput.value)) { showError('email', 'Please enter a valid email'); }
-        else { document.getElementById('email-error')?.classList.add('hidden'); }
-      });
-    }
-    
-    if (passwordInput) {
-      passwordInput.addEventListener('blur', () => {
-        if (passwordInput.value && passwordInput.value.length < 6) { showError('password', 'Password must be at least 6 characters'); }
-        else { document.getElementById('password-error')?.classList.add('hidden'); }
-      });
-    }
-
-    // --- Auth Check (redirect if already logged in) ---
+    if (form) { form.addEventListener('submit', handleSignup); }
+    if (emailInput) { emailInput.addEventListener('blur', function() { if (emailInput.value && !validateEmail(emailInput.value)) { showError('email', 'Please enter a valid email'); } else { var el = document.getElementById('email-error'); if (el) el.classList.add('hidden'); } }); }
+    if (passwordInput) { passwordInput.addEventListener('blur', function() { if (passwordInput.value && passwordInput.value.length < 6) { showError('password', 'Password must be at least 6 characters'); } else { var el = document.getElementById('password-error'); if (el) el.classList.add('hidden'); } }); }
     async function checkAuth() {
-      console.log('🔍 [DEBUG] Checking auth status...');
-      if (!supabaseClient) { console.warn('⚠️ [DEBUG] Supabase client not ready'); return; }
+      if (!supabaseClient) return;
       try {
-        const result = await supabaseClient.auth.getSession();
-        console.log('🔍 [DEBUG] Session result:', result);
-        if (result.data?.session) { 
-          console.log('✅ [DEBUG] User already logged in, redirecting...');
-          window.location.href = CONFIG.redirectAfterSignup; 
-        }
-      } catch (e) { console.error('❌ [DEBUG] Auth check failed:', e); }
+        var result = await supabaseClient.auth.getSession();
+        if (result.data && result.data.session) { window.location.href = CONFIG.redirectAfterSignup; }
+      } catch (e) { console.error('Auth check failed:', e); }
     }
-    
-    console.log('🔍 [DEBUG] DOM Ready State:', document.readyState);
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('🔍 [DEBUG] DOMContentLoaded fired');
-        checkAuth();
-      });
-    } else {
-      console.log('🔍 [DEBUG] DOM already loaded, checking auth now');
-      checkAuth();
-    }
-
-    console.log('✅ [DEBUG] Script initialization complete');
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', checkAuth); } else { checkAuth(); }
   </script>
 </body>
 </html>
